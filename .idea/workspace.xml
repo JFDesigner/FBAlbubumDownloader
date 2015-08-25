@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="9ad9671c-e4d4-4e2a-8fbe-adfeac41e8aa" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/fbAlbumDownload.py" afterPath="$PROJECT_DIR$/fbAlbumDownload.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="FBAlbumDownloader.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -16,7 +17,7 @@
   </component>
   <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/FBAlbumDownloader$fbAlbumDownload.coverage" NAME="fbAlbumDownload Coverage Results" MODIFIED="1440532309179" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/FBAlbumDownloader$fbAlbumDownload.coverage" NAME="fbAlbumDownload Coverage Results" MODIFIED="1440535830387" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -30,14 +31,14 @@
       <file leaf-file-name="fbAlbumDownload.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/fbAlbumDownload.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.41556293">
-              <caret line="384" column="26" selection-start-line="384" selection-start-column="26" selection-end-line="384" selection-end-column="26" />
+            <state vertical-scroll-proportion="0.6660118">
+              <caret line="407" column="0" selection-start-line="407" selection-start-column="0" selection-end-line="407" selection-end-column="0" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
                 <element signature="e#312#748#0" expanded="false" />
-                <element signature="e#2944#6467#0" expanded="false" />
-                <element signature="e#6517#11678#0" expanded="false" />
-                <element signature="e#6782#10505#0" expanded="false" />
+                <element signature="e#2842#6365#0" expanded="false" />
+                <element signature="e#6415#11576#0" expanded="false" />
+                <element signature="e#6680#10403#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -434,11 +435,11 @@
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32908705" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32908705" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39915073" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.39915073" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -462,15 +463,10 @@
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint type="python-line">
-          <url>file://$PROJECT_DIR$/fbAlbumDownload.py</url>
-          <line>29</line>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/fbAlbumDownload.py</url>
-          <line>381</line>
-          <option name="timeStamp" value="12" />
+          <line>28</line>
+          <option name="timeStamp" value="15" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -483,7 +479,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="13" />
+      <option name="time" value="16" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -499,9 +495,9 @@
           <folding>
             <element signature="e#0#13#0" expanded="true" />
             <element signature="e#312#748#0" expanded="false" />
-            <element signature="e#2944#6467#0" expanded="false" />
-            <element signature="e#6517#11678#0" expanded="false" />
-            <element signature="e#6782#10505#0" expanded="false" />
+            <element signature="e#2842#6365#0" expanded="false" />
+            <element signature="e#6415#11576#0" expanded="false" />
+            <element signature="e#6680#10403#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -529,9 +525,9 @@
           <folding>
             <element signature="e#0#13#0" expanded="true" />
             <element signature="e#312#748#0" expanded="false" />
-            <element signature="e#2944#6467#0" expanded="false" />
-            <element signature="e#6517#11678#0" expanded="false" />
-            <element signature="e#6782#10505#0" expanded="false" />
+            <element signature="e#2842#6365#0" expanded="false" />
+            <element signature="e#6415#11576#0" expanded="false" />
+            <element signature="e#6680#10403#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -602,14 +598,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/fbAlbumDownload.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.41556293">
-          <caret line="384" column="26" selection-start-line="384" selection-start-column="26" selection-end-line="384" selection-end-column="26" />
+        <state vertical-scroll-proportion="0.6660118">
+          <caret line="407" column="0" selection-start-line="407" selection-start-column="0" selection-end-line="407" selection-end-column="0" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
             <element signature="e#312#748#0" expanded="false" />
-            <element signature="e#2944#6467#0" expanded="false" />
-            <element signature="e#6517#11678#0" expanded="false" />
-            <element signature="e#6782#10505#0" expanded="false" />
+            <element signature="e#2842#6365#0" expanded="false" />
+            <element signature="e#6415#11576#0" expanded="false" />
+            <element signature="e#6680#10403#0" expanded="false" />
           </folding>
         </state>
       </provider>

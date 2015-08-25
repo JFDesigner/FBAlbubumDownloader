@@ -25,8 +25,6 @@ def openAsChrome(url):
     return content
 
 def findAlbumTitle(data):
-    #findTitle = re.compile('class="fbPhotoAlbumTitle">(.*)</h1>')
-    #title = findTitle.match(data)
     phrase = 'class="fbPhotoAlbumTitle">'
     startPos = data.find(phrase) + len(phrase)
     endPos = data.find('<', startPos)
@@ -338,12 +336,16 @@ def main(argv):
     # handle url info
     if len(argv) <= 1:
         print "No arguments suppiled! pass: url [destDir]"
-        url = r"https://www.facebook.com/ericdam27/media_set?set=a.10204998465376861.1073741845.1098742557"
-        # return 1
+        url = "https://www.facebook.com/profile.php?id=100000072557754&sk=photos&collection_token=100000072557754%3A2305272732%3A69&set=a.1004684399543969.1073741838.100000072557754&type=3"
+        #return 1
     else:
         url = argv[1]
 
     o = urlparse(url)
+    if o.netloc != "www.facebook.com":
+        print "Website is not apart of Facebook. The netloc is \"{}\". Try again".format(o.netloc)
+        return 1
+
     path = o.path.split('/')
 
     browser = mechanize.Browser()
@@ -373,25 +375,26 @@ def main(argv):
     # open the album page url
     browser.open(url)
 
+    if 'Sorry, this content isn\'t available at the moment' in browser.response().read():
+        print "You don't have permission to access the Facebook page. Try another page."
+        return 1
+
     data = cleanHiddenElements(browser.response().read())
 
     title = findAlbumTitle(browser.response().read())
 
     # handle destination directory
     if len(argv) <= 2:
-        destDir = os.path.join(os.path.expanduser(r'~\Downloads'), path[1], title)
+        destDir = os.path.join(os.path.expanduser(r'~\Downloads'), title)
         print "No specified dest dir, default to {} folder.".format(destDir)
     else:
-        destDir = os.path.join(argv[2], path[1], title)
+        destDir = os.path.join(argv[2], title)
 
     destDir = os.path.abspath(destDir)
 
     if not(os.path.isdir(destDir)):
         print "Directory \"{}\" doesn't exist. Making folders...".format(destDir)
         os.makedirs(destDir)
-
-    with open("test.html", "wb") as f:
-        f.write(data)
 
     # the album parser
     fbAlbumP = FacebookAlbumParser(browser)
