@@ -1,19 +1,23 @@
 import urllib
 import mechanize
 from urlparse import urlparse
+import argparse
 
 import browser_cookie
 
 import os
 import sys
-import re
-from HTMLParser import HTMLParser
-from HTMLParser import starttagopen
-from HTMLParser import charref
-from HTMLParser import entityref
-from HTMLParser import incomplete
+from HTMLParser import HTMLParser, starttagopen, charref, entityref, incomplete
 
-def openAsChrome(url):
+__version__ = 1.0
+__file__ = "fbAlbumDownload.py"
+
+def open_as_browser(url):
+    """
+    Used to open a basic url as a modern browser
+    :param url: The url to open
+    :return: the html data as a byte string
+    """
     u = urllib.FancyURLopener()
     u.addheaders = []
     u.addheader('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36')
@@ -24,81 +28,140 @@ def openAsChrome(url):
     f.close()
     return content
 
+
+def save_image(url, destination_dir):
+    o = urlparse(url)
+    filename = o.path.split('/')[-1]
+    final_path = os.path.join(destination_dir, filename)
+
+    print filename
+
+    if os.path.exists(final_path):
+        print "Image already exists at that directory. Stop Download."
+        return False
+    else:
+        with open(final_path, 'wb') as f:
+            data = open_as_browser(url)
+            f.write(data)
+            return True
+
+def create_chrome_browser():
+    browser = mechanize.Browser()
+    cj = browser_cookie.chrome()
+    browser.set_cookiejar(cj)
+
+    # set browser settings
+    browser.set_handle_equiv(True)
+    browser.set_handle_redirect(True)
+    browser.set_handle_referer(True)
+    browser.set_handle_robots(False)
+
+    # Follows refresh 0 but not hangs on refresh > 0
+    browser.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
+
+    # Want debugging messages?
+    # browser.set_debug_http(True)
+    # browser.set_debug_redirects(True)
+    # browser.set_debug_responses(True)
+
+    # append some headings to make the browser act like modern browsers
+    browser.addheaders.append(('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64)'
+                               'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36'))
+    browser.addheaders.append(('Accept-Language', 'en-GB,en-US;q=0.8,en;q=0.6'))
+    browser.addheaders.append(('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'))
+
+    return browser
+
+
 def findAlbumTitle(data):
+    """
+    Find the title of the album in the web-page using basic string find
+    :param data: the html of the page
+    :return: a string with the name of the album
+    """
     phrase = 'class="fbPhotoAlbumTitle">'
-    startPos = data.find(phrase) + len(phrase)
-    endPos = data.find('<', startPos)
-    title = data[startPos:endPos]
+    start_pos = data.find(phrase) + len(phrase)
+    end_pos = data.find('<', start_pos)
+    title = data[start_pos:end_pos]
+    # used to replace the html symbols with unicode symbols
     h = HTMLParser()
-    finalTitle = h.unescape(title)
-    try:
-        return finalTitle
-    except:
+    final_title = h.unescape(title)
+    if final_title != "":
+        return final_title
+    else:
         return "Unnamed"
 
-def cleanHiddenElements(data):
-    # Some of the code is hidden in scripts so we remove the code tags and get just the html
-    phrase ='<code class="hidden_elem" '
-    idPhrase = 'id="u_0_2d"><!-- ' # length is important, the id doesn't actually matter
+
+def clean_hidden_code_elements(data):
+    """
+    Remove some of the hidden code in the page that is inside <code> tags and get all the html in a normal format
+    :param data: the html of the page
+    :return: the code stripped html
+    """
+    phrase = '<code class="hidden_elem" '
+    id_phrase = 'id="u_0_2d"><!-- '  # length is important, the id string doesn't actually matter
     end = '</code>'
-    findEnd = False
+    try_find_end = False
 
     while True:
-        if findEnd:
+        if try_find_end:
             find = end
         else:
             find = phrase
         i = data.find(find)
         if i == -1:
             break
-        data = data[:i+1] + data[i+len(find)+len(idPhrase)-1:]
-        findEnd = not findEnd
+        data = data[:i+1] + data[i+len(find)+len(id_phrase)-1:]
+        try_find_end = not try_find_end
 
     return data
+
 
 class FacebookAlbumParser(HTMLParser):
 
     def __init__(self, browser):
+        """
+        Used to parse the Facebook Album html. Used to get the first image link in the page from the album and is
+        stored in self.imagePage
+        :param browser: the browser
+        :return:
+        """
         HTMLParser.__init__(self)
         self.browser = browser
-        self.count = 0
-        self.i = 0
         self.isTitle = False
         self.title = ""
-        # ignore next div
-        self.isPhotoControlWrapper = False # Found in next <div> with class=" _53s fbPhotoCurationControlWrapper"
-        # use link from next <a> class
-        self.isFinalLink = False # take the href of this one
+
+        self.isPhotoControlWrapper = False  # Found in next <div> with class=" _53s fbPhotoCurationControlWrapper"
+
+        self.isImagePageFound = False
 
         # go to the page
         self.imagePage = ""
 
     def handle_starttag(self, tag, attrs):
+        # used to find first image control wrapper and take the link after it
         if tag == "div":
             for attr in attrs:
                 if attr[0] == 'class' and "_53s fbPhotoCurationControlWrapper" in attr[1]:
                     self.isPhotoControlWrapper = True
                     break
-        elif tag == "a":
-            if self.isPhotoControlWrapper:
-                for attr in attrs:
-                    if attr[0] == 'href':
-                        self.count += 1
-                        self.imagePage = attr[1]
-                        self.isPhotoControlWrapper = False
-                        break
-
-    def handle_data(self, data):
-        pass
+        # if the div before is the photo wrapper and we have a link then take the url since this is the image page
+        elif tag == "a" and self.isPhotoControlWrapper:
+            for attr in attrs:
+                if attr[0] == 'href':
+                    self.imagePage = attr[1]
+                    self.isImagePageFound = True
+                    break
 
     def goahead(self, end):
+        # same as inherit except break statement in start of while loop
         rawdata = self.rawdata
         i = 0
         n = len(rawdata)
         while i < n:
-            if self.count >= 1:
+            if self.isImagePageFound:  # added to stop searching through html after the image page is found
                 break
-            match = self.interesting.search(rawdata, i) # < or &
+            match = self.interesting.search(rawdata, i)  # < or &
             if match:
                 j = match.start()
             else:
@@ -110,7 +173,7 @@ class FacebookAlbumParser(HTMLParser):
             if i == n: break
             startswith = rawdata.startswith
             if startswith('<', i):
-                if starttagopen.match(rawdata, i): # < + letter
+                if starttagopen.match(rawdata, i):  # < + letter
                     k = self.parse_starttag(i)
                 elif startswith("</", i):
                     k = self.parse_endtag(i)
@@ -148,7 +211,7 @@ class FacebookAlbumParser(HTMLParser):
                     i = self.updatepos(i, k)
                     continue
                 else:
-                    if ";" in rawdata[i:]: #bail by consuming &#
+                    if ";" in rawdata[i:]:  # bail by consuming &#
                         self.handle_data(rawdata[0:2])
                         i = self.updatepos(i, 2)
                     break
@@ -184,237 +247,85 @@ class FacebookAlbumParser(HTMLParser):
             i = self.updatepos(i, n)
         self.rawdata = rawdata[i:]
 
-class FacebookImagePageParser(HTMLParser):
 
-    def __init__(self, destDir):
-        HTMLParser.__init__(self)
-        self.destDir = destDir
-        self.nextPage = ""
-        self.count = 0
-        self.imgNum = 0
-        self.isRepeat = False
-        self.complete = False
-
-    def goahead(self, end):
-        self.complete = False
-        self.isRepeat = False
-        rawdata = self.rawdata
-        i = 0
-        n = len(rawdata)
-        while i < n:
-            if self.complete or self.isRepeat:
-                break
-            match = self.interesting.search(rawdata, i) # < or &
-            if match:
-                j = match.start()
-            else:
-                if self.cdata_elem:
-                    break
-                j = n
-            if i < j: self.handle_data(rawdata[i:j])
-            i = self.updatepos(i, j)
-            if i == n: break
-            startswith = rawdata.startswith
-            if startswith('<', i):
-                if starttagopen.match(rawdata, i): # < + letter
-                    k = self.parse_starttag(i)
-                elif startswith("</", i):
-                    k = self.parse_endtag(i)
-                elif startswith("<!--", i):
-                    k = self.parse_comment(i)
-                elif startswith("<?", i):
-                    k = self.parse_pi(i)
-                elif startswith("<!", i):
-                    k = self.parse_html_declaration(i)
-                elif (i + 1) < n:
-                    self.handle_data("<")
-                    k = i + 1
-                else:
-                    break
-                if k < 0:
-                    if not end:
-                        break
-                    k = rawdata.find('>', i + 1)
-                    if k < 0:
-                        k = rawdata.find('<', i + 1)
-                        if k < 0:
-                            k = i + 1
-                    else:
-                        k += 1
-                    self.handle_data(rawdata[i:k])
-                i = self.updatepos(i, k)
-            elif startswith("&#", i):
-                match = charref.match(rawdata, i)
-                if match:
-                    name = match.group()[2:-1]
-                    self.handle_charref(name)
-                    k = match.end()
-                    if not startswith(';', k-1):
-                        k = k - 1
-                    i = self.updatepos(i, k)
-                    continue
-                else:
-                    if ";" in rawdata[i:]: #bail by consuming &#
-                        self.handle_data(rawdata[0:2])
-                        i = self.updatepos(i, 2)
-                    break
-            elif startswith('&', i):
-                match = entityref.match(rawdata, i)
-                if match:
-                    name = match.group(1)
-                    self.handle_entityref(name)
-                    k = match.end()
-                    if not startswith(';', k-1):
-                        k = k - 1
-                    i = self.updatepos(i, k)
-                    continue
-                match = incomplete.match(rawdata, i)
-                if match:
-                    # match.group() will contain at least 2 chars
-                    if end and match.group() == rawdata[i:]:
-                        self.error("EOF in middle of entity or char ref")
-                    # incomplete
-                    break
-                elif (i + 1) < n:
-                    # not the end of the buffer, and can't be confused
-                    # with some other construct
-                    self.handle_data("&")
-                    i = self.updatepos(i, i + 1)
-                else:
-                    break
-            else:
-                assert 0, "interesting.search() lied"
-        # end while
-        if end and i < n and not self.cdata_elem and not self.isRepeat:
-            self.handle_data(rawdata[i:n])
-            i = self.updatepos(i, n)
-
-        if self.isRepeat:
-            self.rawdata=""
-        else:
-            self.rawdata = rawdata[i:]
-
-        return self.complete
-
-    def feed(self, data):
-        r"""Feed data to the parser.
-
-        Call this as often as you want, with as little or as much text
-        as you want (may include '\n').
-        """
-        self.rawdata = self.rawdata + data
-        return self.goahead(0)
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            if ("class", "fbPhotosPhotoActionsItem") in attrs and ("target", "_blank") in attrs:
-                for attr in attrs:
-                    if attr[0] == "href":
-                        self.saveImage(attr[1])
-                        break
-
-    def saveImage(self, _url):
-        data = openAsChrome(_url)
-        o = urlparse(_url)
-        filename = o.path.split('/')[-1]
-
-        finalPath = os.path.join(self.destDir, filename)
-
-        print self.count, ": Saving Image=> ", filename
-
-        if os.path.exists(finalPath):
-            print "Image already exists at that directory, ending image downloads..."
-            self.isRepeat = True
-        else:
-            with open(os.path.join(self.destDir, filename), 'wb') as f:
-                f.write(data)
-                self.count += 1
-                self.complete = True
+def image_process(browser, count, destination_dir):
+    # find the download link
+    img_url = browser.find_link(text="Download")
+    print "{:0=3}".format(count+1), ": Saving Image=> ",
+    # save the image
+    is_not_repeat = save_image(img_url.url, destination_dir)
+    # if successful save, increment count
+    if is_not_repeat:
+        count += 1
+    # go to the next page
+    browser.follow_link(text="Next")
+    return is_not_repeat, count
 
 
-def main(argv):
+def main(url, dest, nImgs):
     # handle url info
-    if len(argv) <= 1:
-        print "No arguments suppiled! pass: url [destDir]"
-        url = "https://www.facebook.com/profile.php?id=100000072557754&sk=photos&collection_token=100000072557754%3A2305272732%3A69&set=a.1004684399543969.1073741838.100000072557754&type=3"
-        #return 1
-    else:
-        url = argv[1]
-
     o = urlparse(url)
     if o.netloc != "www.facebook.com":
         print "Website is not apart of Facebook. The netloc is \"{}\". Try again".format(o.netloc)
         return 1
 
-    path = o.path.split('/')
-
-    browser = mechanize.Browser()
-    cj = browser_cookie.chrome()
-    browser.set_cookiejar(cj)
-
-    # set broswer settings
-    browser.set_handle_equiv(True)
-    #browser.set_handle_gzip(True)
-    browser.set_handle_redirect(True)
-    browser.set_handle_referer(True)
-    browser.set_handle_robots(False)
-
-    # Follows refresh 0 but not hangs on refresh > 0
-    browser.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
-
-     # Want debugging messages?
-    # browser.set_debug_http(True)
-    # browser.set_debug_redirects(True)
-    # browser.set_debug_responses(True)
-
-    # append some headings to make the browser act like modern browsers
-    browser.addheaders.append(('User-Agent', 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36'))
-    browser.addheaders.append(('Accept-Language', 'en-GB,en-US;q=0.8,en;q=0.6'))
-    browser.addheaders.append(('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'))
+    # create the browser with imported cookies and correct headers and options
+    browser = create_chrome_browser()
 
     # open the album page url
     browser.open(url)
 
+    # check if we have permission to access the page
     if 'Sorry, this content isn\'t available at the moment' in browser.response().read():
         print "You don't have permission to access the Facebook page. Try another page."
         return 1
 
-    data = cleanHiddenElements(browser.response().read())
-
+    # clean code segments of the page and store the html
+    data = clean_hidden_code_elements(browser.response().read())
+    # get the title of the album
     title = findAlbumTitle(browser.response().read())
 
     # handle destination directory
-    if len(argv) <= 2:
-        destDir = os.path.join(os.path.expanduser(r'~\Downloads'), title)
-        print "No specified dest dir, default to {} folder.".format(destDir)
-    else:
-        destDir = os.path.join(argv[2], title)
+    destination_dir = os.path.abspath(os.path.join(dest, title))
+    print "Saving files to {} folder.".format(destination_dir)
 
-    destDir = os.path.abspath(destDir)
-
-    if not(os.path.isdir(destDir)):
-        print "Directory \"{}\" doesn't exist. Making folders...".format(destDir)
-        os.makedirs(destDir)
+    if not(os.path.isdir(destination_dir)):
+        print "Directory \"{}\" doesn't exist. Making folders...".format(destination_dir)
+        os.makedirs(destination_dir)
 
     # the album parser
-    fbAlbumP = FacebookAlbumParser(browser)
-    fbAlbumP.feed(data.decode("utf-8", "replace"))
+    fb_album_parser = FacebookAlbumParser(browser)
+    fb_album_parser.feed(data.decode("utf-8", "replace"))
 
     # open the first image page of the album
-    browser.open(fbAlbumP.imagePage)
-    # create the html image parser
-    imgParser = FacebookImagePageParser(destDir)
-    complete = False
+    browser.open(fb_album_parser.imagePage)
 
+    count = 0
+    is_not_repeat = True
     # go through all images and parse to download the images
-    while True:
-        complete = imgParser.feed(browser.response().read().decode("utf-8", "replace"))
-        if not complete:
-            break
-        browser.follow_link(text="Next")
+    if not nImgs:
+        while is_not_repeat:
+            is_not_repeat, count = image_process(browser, count, destination_dir)
+    else:
+        for i in xrange(nImgs):
+            is_not_repeat, count = image_process(browser, count, destination_dir)
 
-    print imgParser.count, "Images saved"
+
+    # final image count
+    print count, "Images saved"
     return 0
 
 if __name__ == "__main__":
-    main(sys.argv)
+    download_dir = os.path.expanduser(r'~\Downloads')
+
+    parser = argparse.ArgumentParser(prog='fbAlbumDownload', description="Download a Facebook Album from a url.")
+    parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
+    parser.add_argument('url', metavar='url', type=str, help="a url to a Facebook Album", nargs='?')
+    parser.add_argument('-dest', type=str, nargs='?', default=download_dir,
+                        help="a destination directory for the album (default: {})".format(download_dir))
+    parser.add_argument('-nImgs', type=int, nargs='?',
+                        help="the number of images in the library. If unset, will iterate until a duplicate is found")
+    args = parser.parse_args()
+
+    print ""
+    main(args.url, args.dest, args.nImgs)
