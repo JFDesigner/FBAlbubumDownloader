@@ -70,7 +70,7 @@ optional arguments:
 
 Also, to note, the default destination directory will be your User folder followed by \Downloads
 
-### Todos
+### To-Do
 
  - Check workings with Mac and Linux
  - Implement so that Cookies arn't used from only Chrome browser 
@@ -78,13 +78,13 @@ Also, to note, the default destination directory will be your User folder follow
  - Implement multi-threading which finds all urls (work from start and from back) and then downloads them all
  - Basic interface and create executable
 
-### Contact
+## Contact
 
 If you have problems or questions then please contact me by emailing me at jonflynn@jfdesigner.co.uk.
 
-### Website
+## Website
 
-Visit my portfolio to see more of my work and interesting programs at jfdesigner.co.uk.
+Visit my portfolio to see more of my work and interesting programs at http://jfdesigner.co.uk/
 
 License
 ----
