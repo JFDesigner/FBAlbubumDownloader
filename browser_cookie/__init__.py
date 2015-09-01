@@ -28,13 +28,17 @@ try:
     # otherwise will raise the "sqlite3.DatabaseError: file is encrypted or is not a database" exception
     from pysqlite2 import dbapi2 as sqlite3
 except ImportError:
-    import sqlite3 
+    import sqlite3
 
-import keyring
-from Crypto.Protocol.KDF import PBKDF2
-from Crypto.Cipher import AES
-import win32crypt
 import shutil
+
+if sys.platform == "darwin" or sys.platform.startswith("linux"):
+    import keyring
+    from Crypto.Protocol.KDF import PBKDF2
+    from Crypto.Cipher import AES
+else:
+    import win32crypt
+
 
 
 class BrowserCookieError(Exception):

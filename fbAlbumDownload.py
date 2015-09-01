@@ -6,11 +6,11 @@ import argparse
 import browser_cookie
 
 import os
-import sys
 from HTMLParser import HTMLParser, starttagopen, charref, entityref, incomplete
 
 __version__ = 1.0
 __file__ = "fbAlbumDownload.py"
+
 
 def open_as_browser(url):
     """
@@ -30,6 +30,12 @@ def open_as_browser(url):
 
 
 def save_image(url, destination_dir):
+    """
+    Saves an image or a url passed
+    :param url: the image/page to be saved
+    :param destination_dir: the destination directory for the image
+    :return: True/False if the the image was saved or not based on if the file already exists
+    """
     o = urlparse(url)
     filename = o.path.split('/')[-1]
     final_path = os.path.join(destination_dir, filename)
@@ -45,7 +51,12 @@ def save_image(url, destination_dir):
             f.write(data)
             return True
 
+
 def create_chrome_browser():
+    """
+    Creates a mechanize Chrome browser including the correct settings, headers and cookies
+    :return: Mechanize Browser object
+    """
     browser = mechanize.Browser()
     cj = browser_cookie.chrome()
     browser.set_cookiejar(cj)
@@ -73,7 +84,7 @@ def create_chrome_browser():
     return browser
 
 
-def findAlbumTitle(data):
+def find_album_title(data):
     """
     Find the title of the album in the web-page using basic string find
     :param data: the html of the page
@@ -249,6 +260,13 @@ class FacebookAlbumParser(HTMLParser):
 
 
 def image_process(browser, count, destination_dir):
+    """
+    Processes the image page, saves the image and continues to the next page
+    :param browser: the Mechanize chrome browser containing all our Cookies
+    :param count: The image download count
+    :param destination_dir: The destination directory for the image
+    :return: True/False if the image was saved, the image count
+    """
     # find the download link
     img_url = browser.find_link(text="Download")
     print "{:0=3}".format(count+1), ": Saving Image=> ",
@@ -262,7 +280,14 @@ def image_process(browser, count, destination_dir):
     return is_not_repeat, count
 
 
-def main(url, dest, nImgs):
+def main(url, destination, num_imgs):
+    """
+    Main function that runs on start
+    :param url: the facebook album page url
+    :param destination: the destination directory for the images
+    :param num_imgs: the number of images in the directory, if specified
+    :return: 0 or 1, Success or Failure
+    """
     # handle url info
     o = urlparse(url)
     if o.netloc != "www.facebook.com":
@@ -283,10 +308,10 @@ def main(url, dest, nImgs):
     # clean code segments of the page and store the html
     data = clean_hidden_code_elements(browser.response().read())
     # get the title of the album
-    title = findAlbumTitle(browser.response().read())
+    title = find_album_title(browser.response().read())
 
     # handle destination directory
-    destination_dir = os.path.abspath(os.path.join(dest, title))
+    destination_dir = os.path.abspath(os.path.join(destination, title))
     print "Saving files to {} folder.".format(destination_dir)
 
     if not(os.path.isdir(destination_dir)):
@@ -303,21 +328,22 @@ def main(url, dest, nImgs):
     count = 0
     is_not_repeat = True
     # go through all images and parse to download the images
-    if not nImgs:
+    if not num_imgs:
         while is_not_repeat:
             is_not_repeat, count = image_process(browser, count, destination_dir)
     else:
-        for i in xrange(nImgs):
+        for i in xrange(num_imgs):
             is_not_repeat, count = image_process(browser, count, destination_dir)
-
 
     # final image count
     print count, "Images saved"
     return 0
 
 if __name__ == "__main__":
+    # create the default download directory to the users download folder
     download_dir = os.path.expanduser(r'~\Downloads')
 
+    # passes all the arguments so the code can be used as a command line program
     parser = argparse.ArgumentParser(prog='fbAlbumDownload', description="Download a Facebook Album from a url.")
     parser.add_argument('--version', action='version', version='%(prog)s {}'.format(__version__))
     parser.add_argument('url', metavar='url', type=str, help="a url to a Facebook Album", nargs='?')
@@ -325,7 +351,9 @@ if __name__ == "__main__":
                         help="a destination directory for the album (default: {})".format(download_dir))
     parser.add_argument('-nImgs', type=int, nargs='?',
                         help="the number of images in the library. If unset, will iterate until a duplicate is found")
+    # parse the arguments
     args = parser.parse_args()
 
     print ""
-    main(args.url, args.dest, args.nImgs)
+    if args.url is not None:
+        main(args.url, args.dest, args.nImgs)
