@@ -9,7 +9,7 @@ FBAlbumDownloader is a command line Facebook Album Downloader that uses Python2.
   - All the images are found and downloaded from that album to a folder
 
 ### Version
-1.0.0
+0.0.1
 
 ### Tech
 
