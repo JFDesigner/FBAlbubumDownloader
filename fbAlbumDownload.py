@@ -8,7 +8,7 @@ import browser_cookie
 import os
 from HTMLParser import HTMLParser, starttagopen, charref, entityref, incomplete
 
-__version__ = 0.0.1
+__version__ = "0.0.1"
 __file__ = "fbAlbumDownload.py"
 
 
