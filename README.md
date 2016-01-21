@@ -2,6 +2,8 @@
 
 ![FBAlbumDownloader](https://jflynndesigner.files.wordpress.com/2015/09/fbalbumdownloader_banner.png "FBAlbumDownloader")
 
+**Currently Working:** No
+
 FBAlbumDownloader is a command line Facebook Album Downloader that uses Python2.7. It does this by:
 
   - You supplying a Facebook album url that you have access to
@@ -77,6 +79,11 @@ Also, to note, the default destination directory will be your User folder follow
  - Use login and store Cookies (tried with Mechanize, didn't work)
  - Implement multi-threading which finds all urls (work from start and from back) and then downloads them all
  - Basic interface and create executable
+ 
+### Bugs
+
+ - If you are using a Chrome User other than the Default (i.e. Profile 1..n) than BrowserCookie is unable to get the cookies
+ - Facebook has changed its html code and so is now unable to download the files. The actual error is when a folder is trying to be created that is now a piece of html that makes it unable to create.
 
 ## Contact
 
